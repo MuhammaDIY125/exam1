@@ -60,8 +60,8 @@ with tab3:
     df['rate'] = df['rate'].replace('', np.nan).fillna(-2)
     df['rate'] = df['rate'].astype(float)
     st.dataframe(df)
-    st.write('-1 - yangi')
-    st.write('-2 - baholanmagan')
+    st.write(-1, '- yangi')
+    st.write(-2, '- baholanmagan')
 
 with tab4:
     st.subheader("location")
