@@ -6,6 +6,13 @@ import seaborn as sns
 
 # --------------------------------------------------------------------
 
+st.set_page_config(
+    page_title="Zomato Bangalore Restaurants",
+    layout="wide"
+)
+
+# --------------------------------------------------------------------
+
 st.title("Ma'lumotlar to'plami haqida")
 
 @st.cache_data
@@ -30,27 +37,34 @@ st.write('Umumiy NaN lar soni:', df.isnull().sum().sum())
 
 # --------------------------------------------------------------------
 
+
 st.title("Tozalash")
+tab1, tab2, tab3, tab4 = st.tabs(["Olib tashlangan ustunlar",
+                                  "online_order va book_table",
+                                  "rate",
+                                  "location"])
+
 df2 = load_data('123.csv')
-st.dataframe(df2)
-st.write('Olib tashlangan ustunlar: url, address va phone')
 
-st.subheader("Yes/No to True/False")
-df['online_order'] = df['online_order'] == 'Yes'
-df['book_table'] = df['book_table'] == 'Yes'
-st.dataframe(df[['online_order', 'book_table']])
-st.write(df['book_table'].dtype)
+with tab1:
+    st.dataframe(df2)
 
-st.subheader("Clear 'rate'")
-df['rate'] = df['rate'].str.replace('/5', '').str.replace('[/5 -]', '', regex=True)
-df['rate'] = df['rate'].str.replace('NEW', '-1.0')
-df['rate'] = df['rate'].replace('', np.nan)
-df['rate'] = df['rate'].fillna(-2)
-df['rate'] = df['rate'].astype(float)
+with tab2:
+    df['online_order'] = df['online_order'] == 'Yes'
+    df['book_table'] = df['book_table'] == 'Yes'
+    st.dataframe(df[['online_order', 'book_table']])
+
+with tab3:
+    df['rate'] = df['rate'].str.replace('[/5 -]', '', regex=True)
+    df['rate'] = df['rate'].str.replace('NEW', '-1.0')
+    df['rate'] = df['rate'].replace('', np.nan).fillna(-2)
+    df['rate'] = df['rate'].astype(float)
+    st.dataframe(df)
+    st.write('-1 - yangi')
+    st.write('-2 - baholanmagan')
+
+with tab4:
+    st.subheader("location")
+    st.write(df.dtypes)
+
 st.dataframe(df)
-st.write('-1 - yangi')
-st.write('-2 - baholanmagan')
-st.write(df['rate'].dtype)
-
-st.subheader("Ustunlar tipi")
-st.write(df.dtypes)
