@@ -177,9 +177,83 @@ with tab10:
         df[c[0]] = df.apply(t10, axis=1)
         st.dataframe(df[c])
 
-st.markdown('---')
+space(2)
+
+if st.button("DataFrame"):
+    st.dataframe(df)
+    st.write('Umumiy NaN lar soni:', df.isnull().sum().sum())
+else:
+    pass
 
 space(2)
 
-st.dataframe(df)
-st.write('Umumiy NaN lar soni:', df.isnull().sum().sum())
+# --------------------------------------------------------------------
+
+st.header("Tahlil", divider=True)
+
+st.subheader("Describe")
+
+min_1, max_1 = st.slider(
+    "rate",
+    min_value=float(df['rate'].min()),
+    max_value=float(df['rate'].max()),
+    value=(df['rate'].min(), df['rate'].max())
+)
+
+min_2, max_2 = st.slider(
+    "votes",
+    min_value=int(df['votes'].min()),
+    max_value=int(df['votes'].max()),
+    value=(df['votes'].min(), df['votes'].max())
+)
+
+min_3, max_3 = st.slider(
+    "approx_cost(for two people)",
+    min_value=int(df['approx_cost(for two people)'].min()),
+    max_value=int(df['approx_cost(for two people)'].max()),
+    value=(df['approx_cost(for two people)'].min(), df['approx_cost(for two people)'].max())
+)
+
+filtered_df = df[(df['rate'] >= min_1) &
+                 (df['rate'] <= max_1) &
+                 (df['votes'] >= min_2) &
+                 (df['votes'] <= max_2) &
+                 (df['approx_cost(for two people)'] >= min_3) &
+                 (df['approx_cost(for two people)'] <= max_3)]
+
+st.dataframe(filtered_df.describe())
+
+st.markdown('---')
+
+st.subheader("Correlation Heatmap")
+
+plt.style.use('ggplot')
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt='.2f')
+st.pyplot(plt)
+
+if st.button("update"):
+    mask = ((df['rate'] > 0) &
+            (df['votes'] > 20) &
+            (df['approx_cost(for two people)'] != -100))
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(df[mask].corr(numeric_only=True), annot=True, cmap='coolwarm', fmt='.2f')
+    st.pyplot(plt)
+
+grouped_df = df.groupby('location').size()
+
+num_top_categories = 10
+
+sorted_df = grouped_df.sort_values(ascending=False)
+top_categories = sorted_df.head(num_top_categories)
+other_categories_sum = sorted_df[num_top_categories:].sum()
+
+final_df = pd.concat([top_categories, pd.Series({'Other': other_categories_sum})])
+
+fig, ax = plt.subplots()
+wedges, texts, autotexts = ax.pie(final_df, autopct='%1.1f%%', startangle=90)
+
+ax.legend(wedges, final_df.index, title="Cuisine", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+
+st.pyplot(fig)
