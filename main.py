@@ -50,15 +50,17 @@ space(2)
 
 st.header("Tozalash", divider=True)
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs(["Olib tashlangan ustunlar",
-                                  "online_order va book_table",
-                                  "rate",
-                                  "votes",
-                                  "location",
-                                  "rest_type",
-                                  "dish_liked",
-                                  "cuisines",
-                                  "approx_cost(for two people)"])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
+"Olib tashlangan ustunlar",
+"online_order va book_table",
+"rate",
+"votes",
+"location",
+"rest_type",
+"dish_liked",
+"cuisines",
+"approx_cost(for two people)",
+"menu_item"])
 
 with tab1:
     st.dataframe(load_data('123.csv'))
@@ -66,17 +68,17 @@ with tab1:
 with tab2:
     col1, col2 = st.columns(2)
     with col1:
-        st.write(df['online_order'].dtype)
         st.dataframe(df[['online_order', 'book_table']])
+        st.write(df['online_order'].dtype)
     with col2:
         df['online_order'] = df['online_order'] == 'Yes'
         df['book_table'] = df['book_table'] == 'Yes'
-        st.write(df['online_order'].dtype)
         st.dataframe(df[['online_order', 'book_table']])
+        st.write(df['online_order'].dtype)
 
 with tab3:
-    col1, col2, col3 = st.columns(3)
     c = ['rate', 'votes', 'reviews_list']
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.dataframe(df[c])
         st.write(df[c[0]].dtype)
@@ -97,12 +99,13 @@ with tab3:
         for i in df[mask].index.tolist():
             df.loc[i, c[0]] = float(df.loc[i, c[2]][9])
         st.dataframe(df[mask][c])
+    space(5)
     st.dataframe(df[c])
 
 with tab4:
-    col1, col2 = st.columns(2)
     c = ['rate', 'votes']
     mask = (df[c[0]] > 0) & (df[c[1]] == 0)
+    col1, col2 = st.columns(2)
     with col1:
         st.dataframe(df[mask][c])
     with col2:
@@ -116,16 +119,24 @@ with tab5:
     df = pd.DataFrame(df.dropna(subset='location'))
 
 with tab6:
-    mask = df['rest_type'].isna()
-    st.dataframe(df[mask])
-    df['rest_type'] = df['rest_type'].fillna('-')
-    st.dataframe(df[mask])
+    c = ['name', 'rest_type']
+    mask = df[c[1]].isna()
+    col1, col2 = st.columns(2)
+    with col1:
+        st.dataframe(df[mask][c])
+    with col2:
+        df[c[1]] = df[c[1]].fillna('-')
+        st.dataframe(df[mask][c])
 
 with tab7:
-    mask = df['dish_liked'].isna()
-    st.dataframe(df[mask])
-    df['dish_liked'] = df['dish_liked'].fillna('-')
-    st.dataframe(df[mask])
+    c = ['name', 'dish_liked']
+    mask = df[c[1]].isna()
+    col1, col2 = st.columns(2)
+    with col1:
+        st.dataframe(df[mask][c])
+    with col2:
+        df[c[1]] = df[c[1]].fillna('-')
+        st.dataframe(df[mask][c])
 
 with tab8:
     mask = df['cuisines'].isna()
@@ -137,11 +148,38 @@ with tab8:
     st.dataframe(df[mask])
 
 with tab9:
-    mask = df['approx_cost(for two people)'].isna()
-    st.dataframe(df[mask])
-    df['approx_cost(for two people)'] = df['approx_cost(for two people)'].fillna('-')
-    st.dataframe(df[mask])
+    c = 'approx_cost(for two people)'
+    col1, col2 = st.columns(2)
+    with col1:
+        st.dataframe(df[c])
+        st.write(df[c].dtype)
+    with col2:
+        df[c] = df[c].str.replace(',', '', regex=True)
+        df[c] = df[c].fillna(-100)
+        df[c] = df[c].astype(int)
+        st.dataframe(df[c])
+        st.write(df[c].dtype)
 
-space(30)
+with tab10:
+    c = ['menu_item', 'dish_liked']
+    def t10(row):
+        if row[c[0]] == '[]' and row[c[1]] != '-':
+            s = []
+            for i in str(row[c[1]]).split(', '):
+                s.append(i)
+            return str(s)
+        else:
+            return row[c[0]]
+    col1, col2 = st.columns(2)
+    with col1:
+        st.dataframe(df[c])
+    with col2:
+        df[c[0]] = df.apply(t10, axis=1)
+        st.dataframe(df[c])
+
+st.markdown('---')
+
+space(2)
 
 st.dataframe(df)
+st.write('Umumiy NaN lar soni:', df.isnull().sum().sum())
