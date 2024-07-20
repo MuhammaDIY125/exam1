@@ -264,7 +264,7 @@ if st.button('scatter plot'):
             (df['votes'] > 20) &
             (df['approx_cost(for two people)'] != -100))
     fig, ax = plt.subplots()
-    sns.scatterplot(data=df, x=x_option, y=y_option, ax=ax)
+    sns.scatterplot(data=df[mask], x=x_option, y=y_option, ax=ax)
     
     ax.set_xlabel(x_option)
     ax.set_ylabel(y_option)
