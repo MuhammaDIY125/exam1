@@ -243,11 +243,9 @@ if st.button("update"):
 
 grouped_df = df.groupby('location').size()
 
-num_top_categories = 10
-
 sorted_df = grouped_df.sort_values(ascending=False)
-top_categories = sorted_df.head(num_top_categories)
-other_categories_sum = sorted_df[num_top_categories:].sum()
+top_categories = sorted_df.head(10)
+other_categories_sum = sorted_df[10:].sum()
 
 final_df = pd.concat([top_categories, pd.Series({'Other': other_categories_sum})])
 
@@ -255,5 +253,20 @@ fig, ax = plt.subplots()
 wedges, texts, autotexts = ax.pie(final_df, autopct='%1.1f%%', startangle=90)
 
 ax.legend(wedges, final_df.index, title="Cuisine", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
-
 st.pyplot(fig)
+
+
+x_option = st.selectbox("X o'qi", ['rate', 'votes', 'approx_cost(for two people)'])
+y_option = st.selectbox("Y o'qi", ['rate', 'votes', 'approx_cost(for two people)'])
+
+if st.button('scatter plot'):
+    mask = ((df['rate'] > 0) &
+            (df['votes'] > 20) &
+            (df['approx_cost(for two people)'] != -100))
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=df, x=x_option, y=y_option, ax=ax)
+    
+    ax.set_xlabel(x_option)
+    ax.set_ylabel(y_option)
+    
+    st.pyplot(fig)
