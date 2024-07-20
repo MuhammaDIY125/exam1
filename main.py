@@ -11,7 +11,6 @@ st.set_page_config(
 )
 
 def space(num_lines=1):
-    """qancha joy tashlash"""
     for _ in range(num_lines):
         st.write("")
 
@@ -51,11 +50,15 @@ space(2)
 
 st.header("Tozalash", divider=True)
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Olib tashlangan ustunlar",
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs(["Olib tashlangan ustunlar",
                                   "online_order va book_table",
                                   "rate",
+                                  "votes",
                                   "location",
-                                  "cuisines"])
+                                  "rest_type",
+                                  "dish_liked",
+                                  "cuisines",
+                                  "approx_cost(for two people)"])
 
 with tab1:
     st.dataframe(load_data('123.csv'))
@@ -72,31 +75,59 @@ with tab2:
         st.dataframe(df[['online_order', 'book_table']])
 
 with tab3:
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
+    c = ['rate', 'votes', 'reviews_list']
     with col1:
-        st.write(df['rate'].dtype)
-        st.dataframe(df['rate'])
-        st.write('NEW - yangi')
-        st.write(None, '- baholanmagan')
+        st.dataframe(df[c])
+        st.write(df[c[0]].dtype)
+        st.write('yangi: "NEW"')
+        st.write('baholanmagan:', None)
     with col2:
-        df['rate'] = df['rate'].str.replace('[/5 -]', '', regex=True)
-        df['rate'] = df['rate'].str.replace('NEW', '-1.0')
-        df['rate'] = df['rate'].replace('', np.nan).fillna(-2)
-        df['rate'] = df['rate'].astype(float)
-        st.write(df['rate'].dtype)
-        mask = (df['rate'] < 0) & (df['reviews_list'] != '[]') & (df['votes'] == 0)
-        st.dataframe(df[mask])
-        st.dataframe(df['rate'])
-        st.write(-1, '- yangi')
-        st.write(-2, '- baholanmagan')
+        df[c[0]] = df[c[0]].str.replace('[/5 -]', '', regex=True)
+        df[c[0]] = df[c[0]].str.replace('NEW', '-1.0')
+        df[c[0]] = df[c[0]].replace('', np.nan).fillna(-2)
+        df[c[0]] = df[c[0]].astype(float)
+        mask = df[c[0]] < 0
+        st.dataframe(df[mask][c])
+        st.write(df[c[0]].dtype)
+        st.write('yangi:', -1)
+        st.write('baholanmagan:', -2)
+    with col3:
+        mask = (df[c[0]] < 0) & (df[c[2]] != '[]') & (df[c[1]] == 0)
+        for i in df[mask].index.tolist():
+            df.loc[i, c[0]] = float(df.loc[i, c[2]][9])
+        st.dataframe(df[mask][c])
+    st.dataframe(df[c])
 
 with tab4:
+    col1, col2 = st.columns(2)
+    c = ['rate', 'votes']
+    mask = (df[c[0]] > 0) & (df[c[1]] == 0)
+    with col1:
+        st.dataframe(df[mask][c])
+    with col2:
+        df.loc[mask, c[1]] = 1
+        st.dataframe(df[mask][c])
+
+with tab5:
     mask = df['location'].isna()
     st.dataframe(df[mask])
     st.write("location ustunidagi NaN lar soni:", df['location'].isnull().sum())
     df = pd.DataFrame(df.dropna(subset='location'))
 
-with tab5:
+with tab6:
+    mask = df['rest_type'].isna()
+    st.dataframe(df[mask])
+    df['rest_type'] = df['rest_type'].fillna('-')
+    st.dataframe(df[mask])
+
+with tab7:
+    mask = df['dish_liked'].isna()
+    st.dataframe(df[mask])
+    df['dish_liked'] = df['dish_liked'].fillna('-')
+    st.dataframe(df[mask])
+
+with tab8:
     mask = df['cuisines'].isna()
     st.dataframe(df[mask])
     df.loc[911, 'cuisines'] = '-'
@@ -104,8 +135,12 @@ with tab5:
     df.loc[8412, 'cuisines'] = '-'
     df.loc[9424, 'cuisines'] = '-'
     st.dataframe(df[mask])
-    # st.write("location ustunidagi NaN lar soni:", df['location'].isnull().sum())
-    # df = pd.DataFrame(df.dropna(subset='location'))
+
+with tab9:
+    mask = df['approx_cost(for two people)'].isna()
+    st.dataframe(df[mask])
+    df['approx_cost(for two people)'] = df['approx_cost(for two people)'].fillna('-')
+    st.dataframe(df[mask])
 
 space(30)
 
